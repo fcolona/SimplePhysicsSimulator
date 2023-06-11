@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cstddef>
 #include <memory>
 #include <vector>
@@ -66,6 +67,25 @@ enum eShapes
 private:
         
     vector<sObject> vecSpaceObjects;
+    
+    void resolveCollision(sObject& object)
+    {
+        if(object.shape == 0)
+        {
+            //Checks if it hits the left or righ wall 
+           if (object.x + sqrt(object.size)/2 > ScreenWidth() || object.x - sqrt(object.size)/2 < 0 )
+           {
+               //Flip the sign of the horizontal component of the velocity
+                object.velocityX = -object.velocityX;
+           }
+           //Checks if it hits the up or down wall
+           else if (object.y + sqrt(object.size)/2 > ScreenHeight() || object.y - sqrt(object.size)/2 < 0)
+           {
+               //Flip the sign of the vertical component of the velocity
+                object.velocityY = -object.velocityY;
+           }
+        }
+    }
         
     void drawObjects(float fElapsedTime)
     {
@@ -80,6 +100,8 @@ private:
             //If it is a square
             if(object.shape == 0)
             {
+                resolveCollision(object);
+
                 for(int x = 0; x < object.size; x++)
                 {
                     for(int y = 0; y < object.size; y++)
@@ -88,6 +110,7 @@ private:
                     }
                 };
             }
+            //If it is a circle
             else if(object.shape)
             {
                 FillCircle(object.x, object.y, object.size, olc::WHITE);
@@ -99,7 +122,7 @@ public:
 	bool OnUserCreate() override
 	{
         //Oblique Throw
-        sObject square = sObject(0.0f, 235.0f, 125, 125, 0, -115, eShapes(1), (int) 16);
+        sObject square = sObject(20.0f, 125.0f, 100, 100, 0, -100, eShapes(0), (int) 16);
         vecSpaceObjects.push_back(square);
         
 		return true;
@@ -109,6 +132,11 @@ public:
 	{
         //clear screen
         FillRect(0, 0, ScreenWidth(), ScreenHeight(), olc::Pixel(0, 0, 0));
+        //Draw Borders
+        DrawLine(1, 1, ScreenWidth() - 1, 1, olc::BLUE);
+	    DrawLine(1, 1, 1, ScreenHeight(), olc::BLUE);
+	    DrawLine(ScreenWidth() - 1, 1, ScreenWidth() - 1, ScreenHeight(), olc::BLUE);
+	    DrawLine(1, ScreenHeight() - 1, ScreenWidth() - 1, ScreenHeight() - 1, olc::BLUE);
         drawObjects(fElapsedTime);
 
         return true;
