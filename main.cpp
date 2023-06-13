@@ -4,9 +4,81 @@
 #include <vector>
 #define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
-using namespace std;
 
-// Override base class with your custom functionality
+struct sObject
+{
+    float x;
+    float y;
+    float velocityX;
+    float velocityY;
+    float accelerationX;
+    float accelerationY;
+    
+    void updateKinematicAttributes(float fElapsedTime)
+    {
+        this->velocityX += this->accelerationX * fElapsedTime;
+        this->velocityY += this->accelerationY * fElapsedTime;
+            
+        this->x += this->velocityX * fElapsedTime;
+        this->y += -this->velocityY * fElapsedTime;
+    }
+            
+    virtual void draw(olc::PixelGameEngine* engine) = 0;
+    virtual void checkAndResolveCollision(olc::PixelGameEngine* engine) = 0;
+};
+struct sSquare : public sObject
+{
+    float sideLenght;
+    sSquare(float x, float y, float velocityX, float velocityY,  float sideLenght)
+    {
+        this->x = x;
+        this->y = y;
+            
+        this->velocityX = velocityX;
+        this->velocityY = velocityY;
+
+        this->accelerationX = 0;
+        this->accelerationY = 0;
+
+        this->sideLenght = sideLenght;
+    }
+    sSquare(float x, float y, float velocityX, float velocityY, float accelerationX, float accelerationY,  float sideLenght)
+    {
+        this->x = x;
+        this->y = y;
+            
+        this->velocityX = velocityX;
+        this->velocityY = velocityY;
+        this->accelerationX = accelerationX;
+        this->accelerationY = accelerationY;
+        this->sideLenght = sideLenght;
+    }
+    void draw(olc::PixelGameEngine *engine) override
+    {
+            for(int x = 0; x < this->sideLenght; x++)
+            {
+                for(int y = 0; y < this->sideLenght; y++)
+                {
+                    engine->Draw(this->x + x, this->y + y, olc::WHITE);
+                }
+            };
+        }
+    void checkAndResolveCollision(olc::PixelGameEngine *engine) override
+    {
+        //Checks if it hits the right or left wall 
+        if (this->x + sideLenght > engine->ScreenWidth() || this->x - sideLenght/2 < -10)
+        {
+            //Flip the sign of the horizontal component of the velocity
+            this->velocityX = -this->velocityX;
+        }
+        //Checks if it hits the down or up wall
+        else if (this->y + sideLenght > engine->ScreenHeight() || this->y - sideLenght/2 < 10)
+        {
+            //Flip the sign of the vertical component of the velocity
+            this->velocityY = -this->velocityY;
+        }
+    }
+};
 
 class Animation : public olc::PixelGameEngine
 {
@@ -17,112 +89,15 @@ public:
 		// Name your application
 		sAppName = "Animation";
 	}
-enum eShapes
-    {
-        SQUARE,
-        CIRCLE
-    };
 
-    struct sObject
-    {
-        float x;
-        float y;
-        float velocityX;
-        float velocityY;
-        float accelerationX;
-        float accelerationY;
-        eShapes shape;
-        int size;
-            
-        //Uniform Motion 
-        sObject(float x, float y, float velocityX, float velocityY, eShapes shape, int size)
-        {
-            this->x = x;
-            this->y = y;
-            
-            this->velocityX = velocityX;
-            this->velocityY = velocityY;
-
-            this->accelerationX = 0;
-            this->accelerationY = 0;
-
-            this->shape = shape;
-            this->size = size;
-        };
-            
-        //Accelerated Motion
-        sObject(float x, float y, float velocityX, float velocityY, float accelerationX, float accelerationY, eShapes shape, int size) 
-        {
-            this->x = x;
-            this->y = y;
-            
-            this->velocityX = velocityX;
-            this->velocityY = velocityY;
-            this->accelerationX = accelerationX;
-            this->accelerationY = accelerationY;
-            this->shape = shape;
-            this->size = size;
-        }
-    };
 private:
-        
-    vector<sObject> vecSpaceObjects;
+    std::vector<sObject*> vecSpaceObjects;
     
-    void resolveCollision(sObject& object)
-    {
-        if(object.shape == 0)
-        {
-            //Checks if it hits the left or righ wall 
-           if (object.x + sqrt(object.size)/2 > ScreenWidth() || object.x - sqrt(object.size)/2 < 0 )
-           {
-               //Flip the sign of the horizontal component of the velocity
-                object.velocityX = -object.velocityX;
-           }
-           //Checks if it hits the up or down wall
-           else if (object.y + sqrt(object.size)/2 > ScreenHeight() || object.y - sqrt(object.size)/2 < 0)
-           {
-               //Flip the sign of the vertical component of the velocity
-                object.velocityY = -object.velocityY;
-           }
-        }
-    }
-        
-    void drawObjects(float fElapsedTime)
-    {
-        for (auto &object : vecSpaceObjects)
-        {
-            object.velocityX += object.accelerationX * fElapsedTime;
-            object.velocityY += object.accelerationY * fElapsedTime;
-            
-            object.x += object.velocityX * fElapsedTime;
-            object.y += -object.velocityY * fElapsedTime;
-
-            //If it is a square
-            if(object.shape == 0)
-            {
-                resolveCollision(object);
-
-                for(int x = 0; x < object.size; x++)
-                {
-                    for(int y = 0; y < object.size; y++)
-                    {
-                        Draw(object.x + x, object.y + y, olc::WHITE);
-                    }
-                };
-            }
-            //If it is a circle
-            else if(object.shape)
-            {
-                FillCircle(object.x, object.y, object.size, olc::WHITE);
-            }
-        };
-    }
-
 public:
-	bool OnUserCreate() override
+    	bool OnUserCreate() override
 	{
         //Oblique Throw
-        sObject square = sObject(20.0f, 125.0f, 100, 100, 0, -100, eShapes(0), (int) 16);
+        sSquare* square = new sSquare(20.0f, 125.0f, 100, 100, 0, -125, 16.0f);
         vecSpaceObjects.push_back(square);
         
 		return true;
@@ -137,8 +112,14 @@ public:
 	    DrawLine(1, 1, 1, ScreenHeight(), olc::BLUE);
 	    DrawLine(ScreenWidth() - 1, 1, ScreenWidth() - 1, ScreenHeight(), olc::BLUE);
 	    DrawLine(1, ScreenHeight() - 1, ScreenWidth() - 1, ScreenHeight() - 1, olc::BLUE);
-        drawObjects(fElapsedTime);
-
+            
+        //Draw objects
+        for (auto object : vecSpaceObjects)
+        {
+            object->updateKinematicAttributes(fElapsedTime);
+            object->checkAndResolveCollision(this);
+            object->draw(this);
+        }
         return true;
 	}
 };
