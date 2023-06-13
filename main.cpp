@@ -80,6 +80,55 @@ struct sSquare : public sObject
     }
 };
 
+
+struct sCircle : public sObject
+{
+    float radius;
+    sCircle(float x, float y, float velocityX, float velocityY,  float radius)
+    {
+        this->x = x;
+        this->y = y;
+            
+        this->velocityX = velocityX;
+        this->velocityY = velocityY;
+
+        this->accelerationX = 0;
+        this->accelerationY = 0;
+
+        this->radius = radius;
+    }
+    sCircle(float x, float y, float velocityX, float velocityY, float accelerationX, float accelerationY,  float radius)
+    {
+        this->x = x;
+        this->y = y;
+            
+        this->velocityX = velocityX;
+        this->velocityY = velocityY;
+        this->accelerationX = accelerationX;
+        this->accelerationY = accelerationY;
+        this->radius = radius;
+    }
+    void draw(olc::PixelGameEngine *engine) override
+    {
+        engine->FillCircle(x, y, radius, olc::WHITE);
+    }
+    void checkAndResolveCollision(olc::PixelGameEngine *engine) override
+    {
+        //Checks if it hits the right or left wall 
+        if (this->x + this->radius > engine->ScreenWidth() || this->x - radius < 0)
+        {
+            //Flip the sign of the horizontal component of the velocity
+            this->velocityX = -this->velocityX;
+        }
+        //Checks if it hits the down or up wall
+        else if (this->y + this->radius > engine->ScreenHeight() || this->y - this->radius < 1)
+        {
+            //Flip the sign of the vertical component of the velocity
+            this->velocityY = -this->velocityY;
+        }
+    }
+};
+
 class Animation : public olc::PixelGameEngine
 {
         
@@ -97,8 +146,9 @@ public:
     	bool OnUserCreate() override
 	{
         //Oblique Throw
-        sSquare* square = new sSquare(20.0f, 125.0f, 100, 100, 0, -125, 16.0f);
-        vecSpaceObjects.push_back(square);
+        //sSquare* square = new sSquare(20.0f, 125.0f, 100, 100, 0, -125, 16.0f);
+        sCircle* circle = new sCircle(20.0f, 125.0f, 100, 100, 0, -125, 15.0f);
+        vecSpaceObjects.push_back(circle);
         
 		return true;
 	}
