@@ -13,6 +13,7 @@ struct sObject
     float velocityY;
     float accelerationX;
     float accelerationY;
+    olc::Pixel color;
     
     void updateKinematicAttributes(float fElapsedTime)
     {
@@ -29,7 +30,7 @@ struct sObject
 struct sSquare : public sObject
 {
     float sideLenght;
-    sSquare(float x, float y, float velocityX, float velocityY,  float sideLenght)
+    sSquare(float x, float y, float velocityX, float velocityY,  float sideLenght, olc::Pixel color)
     {
         this->x = x;
         this->y = y;
@@ -41,8 +42,9 @@ struct sSquare : public sObject
         this->accelerationY = 0;
 
         this->sideLenght = sideLenght;
+        this->color = color;
     }
-    sSquare(float x, float y, float velocityX, float velocityY, float accelerationX, float accelerationY,  float sideLenght)
+    sSquare(float x, float y, float velocityX, float velocityY, float accelerationX, float accelerationY,  float sideLenght, olc::Pixel color)
     {
         this->x = x;
         this->y = y;
@@ -52,6 +54,7 @@ struct sSquare : public sObject
         this->accelerationX = accelerationX;
         this->accelerationY = accelerationY;
         this->sideLenght = sideLenght;
+        this->color = color;
     }
     void draw(olc::PixelGameEngine *engine) override
     {
@@ -59,7 +62,7 @@ struct sSquare : public sObject
             {
                 for(int y = 0; y < this->sideLenght; y++)
                 {
-                    engine->Draw(this->x + x, this->y + y, olc::WHITE);
+                    engine->Draw(this->x + x, this->y + y, this->color);
                 }
             };
         }
@@ -84,7 +87,7 @@ struct sSquare : public sObject
 struct sCircle : public sObject
 {
     float radius;
-    sCircle(float x, float y, float velocityX, float velocityY,  float radius)
+    sCircle(float x, float y, float velocityX, float velocityY,  float radius, olc::Pixel color)
     {
         this->x = x;
         this->y = y;
@@ -96,8 +99,9 @@ struct sCircle : public sObject
         this->accelerationY = 0;
 
         this->radius = radius;
+        this->color = color;
     }
-    sCircle(float x, float y, float velocityX, float velocityY, float accelerationX, float accelerationY,  float radius)
+    sCircle(float x, float y, float velocityX, float velocityY, float accelerationX, float accelerationY,  float radius, olc::Pixel color)
     {
         this->x = x;
         this->y = y;
@@ -107,10 +111,11 @@ struct sCircle : public sObject
         this->accelerationX = accelerationX;
         this->accelerationY = accelerationY;
         this->radius = radius;
+        this->color = color;
     }
     void draw(olc::PixelGameEngine *engine) override
     {
-        engine->FillCircle(x, y, radius, olc::WHITE);
+        engine->FillCircle(this->x, this->y, this->radius, this->color);
     }
     void checkAndResolveCollision(olc::PixelGameEngine *engine) override
     {
@@ -146,8 +151,8 @@ public:
     	bool OnUserCreate() override
 	{
         //Oblique Throw
-        //sSquare* square = new sSquare(20.0f, 125.0f, 100, 100, 0, -125, 16.0f);
-        sCircle* circle = new sCircle(20.0f, 125.0f, 100, 100, 0, -125, 15.0f);
+        //sSquare* square = new sSquare(20.0f, 125.0f, 100, 100, 0, -125, 16.0f, olc::RED);
+        sCircle* circle = new sCircle(20.0f, 125.0f, 100, 100, 0, -125, 15.0f, olc::RED);
         vecSpaceObjects.push_back(circle);
         
 		return true;
